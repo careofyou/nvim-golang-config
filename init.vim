@@ -1,28 +1,70 @@
+if empty(glob('~/.config/nvim/autoload/plug.vim'))
+  silent !curl -fLo ~/.config/nvim/autoload/plug.vim --create-dirs
+    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd!
+  autocmd VimEnter * PlugInstall
+endif
 
-let mapleader = "\<space>"
+call plug#begin('~/.config/nvim/plugged')
+"File Search:
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
+"File Browser:
+Plug 'scrooloose/nerdtree'
+Plug 'jistr/vim-nerdtree-tabs'
+Plug 'mkitt/tabline.vim'
+Plug 'ryanoasis/vim-devicons'
+"Color:
+Plug 'morhetz/gruvbox'
+"Golang:
+Plug 'neovim/nvim-lspconfig'
+Plug 'fatih/vim-go'
+Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
+"Autocomplete:
+Plug 'LunarWatcher/auto-pairs', {'branch': 'develop'}
+Plug 'ncm2/ncm2'
+Plug 'ncm2/ncm2-go'
+Plug 'roxma/nvim-yarp'
+Plug 'roxma/vim-hug-neovim-rpc'
+Plug 'stamblerre/gocode', { 'rtp': 'nvim', 'do': '~/.config/nvim/plugged/gocode/nvim/symlink.sh' }
+"Snippets:
+Plug 'ncm2/ncm2-ultisnips'
+Plug 'SirVer/ultisnips'
+"Git:
+Plug 'tpope/vim-fugitive'
+call plug#end()
+"MAIN
+"-------------
+set backspace=2           " Makes backspace not behave all retarded-like
+set colorcolumn=80        " Highlight 80 character limit
+set laststatus=2          " Always show the status bar
+set number
+set showmatch             " Highlight matching braces
+set showmode              " Show the current mode on the open buffer
 
-" https://raw.githubusercontent.com/neoclide/coc.nvim/master/doc/coc-example-config.vim
 
-" May need for Vim (not Neovim) since coc.nvim calculates byte offset by count
-hi PmenuSel ctermbg=251 ctermfg=237 guibg=#ffffff guifg=#33374c
-" utf-8 byte sequence
-
+set updatetime=300
+set tabstop=4 softtabstop=4 shiftwidth=4 expandtab smarttab autoindent
 set encoding=utf-8
-" Some servers have issues with backup files, see #649
-set nobackup
-set nowritebackup
-"colors
-function! MyHighlights() abort
-    highlight Visual     cterm=NONE ctermbg=76  ctermfg=16  gui=NONE guibg=#5fd700 guifg=#000000
-    highlight StatusLine cterm=NONE ctermbg=231 ctermfg=160 gui=NONE guibg=#ffffff guifg=#d70000
-    highlight Normal     cterm=NONE ctermbg=17              gui=NONE guibg=#00005f
-    highlight NonText    cterm=NONE ctermbg=17              gui=NONE guibg=#00005f
-endfunction
+set number
+set title
 
-augroup MyColors
-    autocmd!
-    autocmd ColorScheme * call MyHighlights()
-augroup END
+"COPY/PASTE:
+"-----------
+"Increases the memory limit from 50 lines to 1000 lines
+:set viminfo='100,<1000,s10,h
+
+"NUMBERING:
+"----------
+:set number
+
+"INDENTATION:
+"------------
+"Highlights code for multiple indents without reselecting
+vnoremap < <gv
+vnoremap > >gv
+"COC_DEFAULTS
+"------------
 " Having longer updatetime (default is 4000 ms = 4s) leads to noticeable
 " delays and poor user experience
 set updatetime=300
@@ -158,8 +200,8 @@ command! -nargs=0 OR   :call     CocActionAsync('runCommand', 'editor.action.org
 " NOTE: Please see `:h coc-status` for integrations with external plugins that
 " provide custom statusline: lightline.vim, vim-airline
 set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
-
 " Mappings for CoCList
+" ------------
 " Show all diagnostics
 nnoremap <silent><nowait> <space>a  :<C-u>CocList diagnostics<cr>
 " Manage extensions
@@ -174,36 +216,112 @@ nnoremap <silent><nowait> <space>s  :<C-u>CocList -I symbols<cr>
 nnoremap <silent><nowait> <space>j  :<C-u>CocNext<CR>
 " Do default action for previous item
 nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
-" Resume latest coc list
-nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
-set backspace=2           " Makes backspace not behave all retarded-like
-set colorcolumn=80        " Highlight 80 character limit
-set laststatus=2          " Always show the status bar
-set number
-set showmatch             " Highlight matching braces
-set showmode              " Show the current mode on the open buffer
 
+"COLOR:
+"------
+colorscheme gruvbox
+function! MyHighlights() abort
+    highlight Visual     cterm=NONE ctermbg=76  ctermfg=16  gui=NONE guibg=#5fd700 guifg=#000000
+    highlight StatusLine cterm=NONE ctermbg=231 ctermfg=160 gui=NONE guibg=#ffffff guifg=#d70000
+    highlight Normal     cterm=NONE ctermbg=17              gui=NONE guibg=#00005f
+    highlight NonText    cterm=NONE ctermbg=17              gui=NONE guibg=#00005f
+endfunction
 
-set updatetime=300
-set tabstop=4 softtabstop=4 shiftwidth=4 expandtab smarttab autoindent
-set encoding=utf-8
-set number
-set title
-
-map <C-n> :NERDTreeToggle<CR>
+"TREE
+"------------
 " autorun nerdtree
 autocmd StdinReadPre * let s:std_in=1
 autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
 " close nvim if only nerdtree is open
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+"AUTO IMPORT:
+"------------
+let g:go_fmt_command = "goimports"
 
-call plug#begin('~/.vim/plugged')
-Plug 'fatih/vim-go'
-Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
-Plug 'preservim/nerdtree'
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-Plug 'junegunn/fzf.vim'
-Plug 'neovim/nvim-lspconfig'
-Plug 'LunarWatcher/auto-pairs', {'branch': 'develop'}
-call plug#end()
+"AUTOCOMPLETE:
+"-------------
+"SNIPPETS:
+"---------
+"Change default expand since TAB is used to cycle options
+let g:UltiSnipsExpandTrigger="<c-j>"
+let g:UltiSnipsJumpForwardTrigger="<c-j>"
+let g:UltiSnipsJumpBackwardTrigger="<c-k>"
 
+::
+"FILE SEARCH:
+"------------
+"allows FZF to open by pressing CTRL-F
+map <C-p> :FZF<CR>
+"allow FZF to search hidden 'dot' files
+let $FZF_DEFAULT_COMMAND = "find -L"
+
+"FILE BROWSER:
+"-------------
+"allows NERDTree to open/close by typing 'n' then 't'
+map <C-n> :NERDTreeTabsToggle<CR>
+"Start NERDtree when dir is selected (e.g. "vim .") and start NERDTreeTabs
+let g:nerdtree_tabs_open_on_console_startup=2
+"Add a close button in the upper right for tabs
+let g:tablineclosebutton=1
+
+"Automatically find and select currently opened file in NERDTree
+let g:nerdtree_tabs_autofind=1
+"Add folder icon to directories
+let g:WebDevIconsUnicodeDecorateFolderNodes = 1
+let g:DevIconsEnableFoldersOpenClose = 1
+"Hide expand/collapse arrows
+let g:NERDTreeDirArrowExpandable = "\u00a0"
+let g:NERDTreeDirArrowCollapsible = "\u00a0"
+let g:WebDevIconsNerdTreeBeforeGlyphPadding = ""
+highlight! link NERDTreeFlags NERDTreeDir
+
+"SHORTCUTS:
+"----------
+"Open file at same line last closed
+if has("autocmd")
+  au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
+  \| exe "normal! g'\"" | endif
+endif
+
+"SOURCING:
+"---------
+"Automatically reloads neovim configuration file on write (w)
+autocmd! bufwritepost init.vim source %
+
+"MOUSE:
+"------
+"Allow using mouse helpful for switching/resizing windows
+set mouse+=a
+if &term =~ '^screen'
+  " tmux knows the extended mouse mode
+  set ttymouse=xterm2
+endif
+
+"TEXT SEARCH:
+"------------
+"Makes Search Case Insensitive
+set ignorecase
+
+"SWAP:
+"-----
+set dir=~/.local/share/nvim/swap/
+
+"GIT (FUGITIVE):
+"---------------
+map fgb :Gblame<CR>
+map fgs :Gstatus<CR>
+map fgl :Glog<CR>
+map fgd :Gdiff<CR>
+map fgc :Gcommit<CR>
+map fga :Git add %:p<CR>
+
+"SYNTAX HIGHLIGHTING:
+"--------------------
+syntax on
+
+"HIGHLIGHTING:
+"-------------
+" <Ctrl-l> redraws the screen and removes any search highlighting.
+nnoremap <silent> <C-l> :nohl<CR><C-l>
+" Highlight the current line the cursor is on
+set cursorline
